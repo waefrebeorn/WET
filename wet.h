@@ -165,6 +165,7 @@ void       wet_widget_remove(WetWidget *parent, WetWidget *child);
 
 const char     *wet_widget_id    (const WetWidget *w);
 WetClassId      wet_widget_class(const WetWidget *w);
+const char     *wet_widget_class_name(const WetWidget *w);
 WetRect         wet_widget_rect (const WetWidget *w);
 WetSize         wet_widget_desired(const WetWidget *w);
 
