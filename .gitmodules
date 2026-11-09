@@ -1,0 +1,3 @@
+[submodule "externals/wua"]
+	path = externals/wua
+	url = https://github.com/waefrebeorn/Wua.git
