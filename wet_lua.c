@@ -289,6 +289,75 @@ static WetWidget *build_widget(WetLuaCtx *ctx, wb_lv_table *t, const char **err)
     return w;
 }
 
+/* -------------------------------------------------- dynamic construction */
+/*
+ * A designer must be able to instantiate a control at runtime, not only from a
+ * table literal.  wet.create(class, id) makes one and returns its proxy; it is
+ * unattached until wet.attach(parent, child) or wet.add(parent, child).
+ */
+
+static wb_lv_value make_proxy(wb_lv *L, WetLuaCtx *ctx, WetWidget *w) {
+    wb_lv_table *proxy = wb_lv_table_new(L, 0, 2);
+    proxy_set_ptr(L, proxy, w);
+    wb_lv_setmetatable(L, proxy, ctx->proxy_meta);
+    wb_lv_value out; out.t = WB_LV_TABLE; out.as.tab = proxy;
+    return out;
+}
+
+static wb_lv_value wet_create_fn(wb_lv *L, wb_lv_value *args, int n, void *ud) {
+    WetLuaCtx *ctx = (WetLuaCtx *)ud;
+    if (n < 2) { wb_lv_set_global(L, "__wet_err", wb_lv_str("wet.create needs class and id")); return wb_lv_nil(); }
+    const char *cls = wb_lv_tostring(args[0]);
+    const char *id  = wb_lv_tostring(args[1]);
+    WetClassId cid = 0;
+    /* Look the class up by name against the registered classes. */
+    extern const WetWidgetClass *wet_class_by_name(const char *name);
+    const WetWidgetClass *c = wet_class_by_name(cls);
+    if (c) cid = c->id;
+    if (!cid) {
+        char buf[160];
+        snprintf(buf, sizeof buf, "wet.create: unknown class '%s'", cls ? cls : "?");
+        wb_lv_set_global(L, "__wet_err", wb_lv_str(buf));
+        return wb_lv_nil();
+    }
+    WetWidget *w = wet_widget_new(ctx->app, cid, id);
+    if (!w) { wb_lv_set_global(L, "__wet_err", wb_lv_str("wet.create: alloc failed")); return wb_lv_nil(); }
+    return make_proxy(L, ctx, w);
+}
+
+/* Attach a proxy (or an id) to a parent id. */
+/* Attach a proxy (or an id) to a parent id. */
+static wb_lv_value wet_attach_fn(wb_lv *L, wb_lv_value *a, int n, void *ud) {
+    WetLuaCtx *ctx = (WetLuaCtx *)ud;
+    if (n < 2) return wb_lv_bool(0);
+    WetWidget *parent = NULL;
+    if (a[0].t == WB_LV_TABLE) parent = proxy_widget(L, a[0].as.tab);
+    else if (a[0].t == WB_LV_STR) parent = wet_app_find(ctx->app, wb_lv_tostring(a[0]));
+    if (!parent) { wb_lv_set_global(L, "__wet_err", wb_lv_str("wet.attach: no parent")); return wb_lv_bool(0); }
+
+    WetWidget *child = NULL;
+    if (a[1].t == WB_LV_TABLE) child = proxy_widget(L, a[1].as.tab);
+    else if (a[1].t == WB_LV_STR) child = wet_app_find(ctx->app, wb_lv_tostring(a[1]));
+    if (!child) { wb_lv_set_global(L, "__wet_err", wb_lv_str("wet.attach: no child")); return wb_lv_bool(0); }
+
+    wet_widget_add(parent, child);
+    wet_app_layout(ctx->app);
+    return wb_lv_bool(1);
+}
+
+static wb_lv_value wet_detach_fn(wb_lv *L, wb_lv_value *a, int n, void *ud) {
+    (void)L;
+    WetLuaCtx *ctx = (WetLuaCtx *)ud;
+    if (n < 1) return wb_lv_bool(0);
+    WetWidget *w = NULL;
+    if (a[0].t == WB_LV_TABLE) w = proxy_widget(L, a[0].as.tab);
+    else if (a[0].t == WB_LV_STR) w = wet_app_find(ctx->app, wb_lv_tostring(a[0]));
+    if (!w || !w->parent) return wb_lv_bool(0);
+    wet_widget_remove(w->parent, w);
+    wet_app_layout(ctx->app);
+    return wb_lv_bool(1);
+}
+
 /* --------------------------------------------------------------- events */
 
 /* Look up the C handler for a widget+kind, then call its Lua function. */
@@ -548,6 +617,9 @@ void wet_lua_register(WetLua *wl) {
     for (int i = 0; ctors[i]; i++)
         WET_FN(ctors[i], wet_ctor, (void *)ctors[i]);
 
+    WET_FN("create",     wet_create_fn, ctx);
+    WET_FN("attach",     wet_attach_fn, ctx);
+    WET_FN("detach",     wet_detach_fn, ctx);
     WET_FN("applet",     wet_applet_fn, ctx);
     WET_FN("find",       wet_find_fn,   ctx);
     WET_FN("messagebox", wet_messagebox_fn, ctx);
