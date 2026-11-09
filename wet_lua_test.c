@@ -284,6 +284,9 @@ static void test_handler_error_is_isolated(void) {
     const char *le = wet_app_last_error(app);
     CHECK(le != NULL, "raising handler was reported");
     CHECK(strstr(le, "click") != NULL, "report names the raising handler");
+    /* The raised message itself.  wb_lv_pcall used to stash an empty string
+     * here, so this read "raised: " with nothing after the colon. */
+    CHECK(strstr(le, "boom") != NULL, "report carries the raised message");
     /* The app is still alive and usable. */
     CHECK(app->root != NULL, "tree survives a raising handler");
     wet_lua_free(wl);

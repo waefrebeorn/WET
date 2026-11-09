@@ -113,18 +113,21 @@ run without a kernel; it is never compiled into the OS.
 - metatables: `wb_lv_getmetatable`, `wb_lv_setmetatable`, `wb_lv_has_meta`
 - the full Lua 5.4 language surface, including string methods (`s:upper()`)
 
-**Required, not yet correct**
-- `wb_lv_pcall` reports the caught message through the global
-  `__lv_last_error`.  It is currently set to an **empty string**; the Lua-level
-  `pcall` returns the right text.  `.WET` reads it to report a raising
-  handler, so every handler error currently reads as "raised: ".
-- `wb_lv_coro.c` does not compile on non-Windows hosts (the `#else` branches
-  reference `co`, which is declared inside the `#ifdef`).  Until it builds,
-  `wubu_lua_compat.c` supplies a weak `wb_lv_register_coro` so the rest links.
+**Fixed upstream (Wua `0a389a0` and later)**
+- `wb_lv_pcall` now reports the caught message correctly.  It stashes the raised
+  *value* when there is one (`error(obj)` raises the object, exactly as in
+  Lua), otherwise the stringified message.  `__lv_last_error` is no longer an
+  empty string, so a raising handler reports its own text.
+- `wb_lv_coro.c` compiles on non-Windows hosts, so `coroutine.*` is available
+  everywhere and the `wubu_lua_compat.c` shim is gone.
+- Table constructors no longer let keyed fields shift the array part:
+  `{spacing=6, 'a','b','c'}` and `{'a','b','c', spacing=6}` are the same table,
+  and a trailing call or vararg still expands to every value.
 
-**Workaround in place (no action needed)**
-- A table literal with a hash-part key *before* its array items loses the
-  array part (`{spacing=6, 'a','b'}` has length 0).  `.WET` therefore uses an
-  explicit `children = { ... }` array, which is unaffected.
+**Note for other embedders**
+`__attribute__((weak))` on a *definition* is an ELF-only idiom.  On MinGW/PE it
+does not emit a global weak definition — `nm` shows a weak *undefined*
+reference plus the body under a local `.weak.<name>.` symbol — so the link
+still fails.  That is why the old `wubu_lua_compat.c` shim did not work here.
 
 See `WET.md` in the WuBuOS repository for the integration notes.

@@ -14,15 +14,24 @@ CC      ?= cc
 CFLAGS  ?= -O0 -g -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra
 LDLIBS  ?= -lm
 
+# MinGW's gcc appends .exe to -o build/test_wet; ELF gcc does not. Name the
+# targets the way the compiler will, or make can never find what it built and
+# the run step fails with CreateProcess.
+ifeq ($(OS),Windows_NT)
+EXE := .exe
+else
+EXE :=
+endif
+
 WUA     := externals/wua/src
-WUA_SRCS := $(WUA)/wb_lv_arena.c $(WUA)/wb_lv_eval.c $(WUA)/wb_lv_host.c \
-            $(WUA)/wb_lv_lex.c $(WUA)/wb_lv_parse.c $(WUA)/wb_lv_value.c \
-            $(WUA)/wb_lv_stdlib.c $(WUA)/wb_lv_string.c
+WUA_SRCS := $(WUA)/wb_lv_arena.c $(WUA)/wb_lv_coro.c $(WUA)/wb_lv_eval.c \
+            $(WUA)/wb_lv_host.c $(WUA)/wb_lv_lex.c $(WUA)/wb_lv_parse.c \
+            $(WUA)/wb_lv_value.c $(WUA)/wb_lv_stdlib.c $(WUA)/wb_lv_string.c
 
 FRAMEWORK := wet_widget.c wet_layout.c wet_render.c wet_controls.c \
              wet_app.c wet_input.c wet_backend_vbe.c
 
-TESTS := build/test_wet build/test_wet_lua
+TESTS := build/test_wet$(EXE) build/test_wet_lua$(EXE)
 
 .PHONY: all test check clean
 all: $(TESTS)
@@ -31,17 +40,17 @@ build:
 	mkdir -p build
 
 # Framework only -- no interpreter, no VBE.
-build/test_wet: wet_selftest.c $(FRAMEWORK) hosted/vbe_shim.c | build
+build/test_wet$(EXE): wet_selftest.c $(FRAMEWORK) hosted/vbe_shim.c | build
 	$(CC) $(CFLAGS) -I. -Ihosted $^ $(LDLIBS) -o $@
 
 # Framework + Lua binding, against Wua.
-build/test_wet_lua: wet_lua_test.c wet_lua.c wubu_lua_compat.c $(FRAMEWORK) \
-                   hosted/vbe_shim.c $(WUA_SRCS) | build
+build/test_wet_lua$(EXE): wet_lua_test.c wet_lua.c $(FRAMEWORK) \
+                          hosted/vbe_shim.c $(WUA_SRCS) | build
 	$(CC) $(CFLAGS) -I. -Ihosted -I$(WUA) $^ $(LDLIBS) -o $@
 
 test check: $(TESTS)
-	./build/test_wet
-	./build/test_wet_lua
+	./build/test_wet$(EXE)
+	./build/test_wet_lua$(EXE)
 
 clean:
 	rm -rf build
