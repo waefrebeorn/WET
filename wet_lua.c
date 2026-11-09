@@ -624,7 +624,8 @@ const char *wet_lua_run(WetLua *wl, const char *src, const char *chunkname) {
 }
 
 /* Called by the framework when a control fires an event. */
-void wet_lua_dispatch(WetLua *wl, WetWidget *w, const WetEvent *ev) {
-    if (!wl || !wl->ctx || !w || !ev) return;
-    call_handlers(wl->ctx, w, ev);
+void wet_lua_dispatch(WetLua *wl, WetWidget *w, const void *ev) {
+    const WetEvent *evp = (const WetEvent *)ev;
+    if (!wl || !wl->ctx || !w || !evp) return;
+    call_handlers(wl->ctx, w, evp);
 }

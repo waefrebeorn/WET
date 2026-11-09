@@ -32,8 +32,9 @@ WetApp *wet_lua_app(WetLua *wl);
 const char *wet_lua_run(WetLua *wl, const char *src, const char *chunkname);
 
 /* Fire an event at the script's handlers.  Called by the framework; safe to
- * call when no Lua state exists. */
-void wet_lua_dispatch(WetLua *wl, WetWidget *w, const WetEvent *ev);
+ * call when no Lua state exists.  `ev` is the framework's internal event and
+ * is only meaningful to the binding. */
+void wet_lua_dispatch(WetLua *wl, WetWidget *w, const void *ev);
 
 /* The app's Lua state, or NULL.  Used by wet_app_load. */
 void *wet_app_lua(WetApp *app);
