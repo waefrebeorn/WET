@@ -207,6 +207,9 @@ void wet_widget_render(WetWidget *w, WetRender *r) {
 
 const char  *wet_widget_id     (const WetWidget *w) { return w ? w->id : NULL; }
 WetClassId   wet_widget_class (const WetWidget *w) { return w ? w->cls->id : 0; }
+const char  *wet_widget_class_name(const WetWidget *w) {
+    return (w && w->cls) ? w->cls->name : NULL;
+}
 WetRect      wet_widget_rect  (const WetWidget *w) { return w ? w->rect : WET_RECT_EMPTY; }
 WetSize      wet_widget_desired(const WetWidget *w) { return w ? w->desired : (WetSize){0,0}; }
 void        *wet_widget_payload(WetWidget *w)      { return w ? w->payload : NULL; }

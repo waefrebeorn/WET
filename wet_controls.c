@@ -578,6 +578,9 @@ void wet_textbox_set_password(WetWidget *w, bool on) {
     if (w && w->cls->id == WET_CLASS_TEXTBOX) ((WetTextBox *)w->payload)->password = on;
 }
 
+const char *wet_checkbox_text(const WetWidget *w) {
+    return (w && w->cls->id == WET_CLASS_CHECKBOX) ? ((WetCheckBox *)w->payload)->text : NULL;
+}
 bool wet_checkbox_checked(const WetWidget *w) {
     return (w && w->cls->id == WET_CLASS_CHECKBOX) ? ((WetCheckBox *)w->payload)->checked : false;
 }
@@ -658,6 +661,9 @@ void wet_slider_set_maximum(WetWidget *w, int v) {
     if (w && w->cls->id == WET_CLASS_SLIDER) ((WetSlider *)w->payload)->maximum = v;
 }
 
+const char *wet_groupbox_text(const WetWidget *w) {
+    return (w && w->cls->id == WET_CLASS_GROUPBOX) ? ((WetGroupBox *)w->payload)->text : NULL;
+}
 int wet_image_width(const WetWidget *w) {
     return (w && w->cls->id == WET_CLASS_IMAGE) ? ((WetImage *)w->payload)->width : 0;
 }

@@ -232,8 +232,14 @@ static void canvas_arrange(WetWidget *w, WetRect r) {
     for (int i = 0; i < w->nchildren; i++) {
         WetWidget *c = w->children[i];
         if (!c->visible) continue;
-        int cw = c->desired.w - slot_h(c);
-        int ch = c->desired.h - slot_v(c);
+        int cw, ch;
+        if (c->slot.size_set) {
+            cw = c->slot.size_w;
+            ch = c->slot.size_h;
+        } else {
+            cw = c->desired.w - slot_h(c);
+            ch = c->desired.h - slot_v(c);
+        }
         if (cw < 0) cw = 0;
         if (ch < 0) ch = 0;
         wet_widget_arrange(c, (WetRect){ c->slot.canvas_left + c->slot.margin_l,
@@ -368,6 +374,16 @@ int  wet_canvas_left(const WetWidget *child) { return child ? child->slot.canvas
 int  wet_canvas_top (const WetWidget *child) { return child ? child->slot.canvas_top  : 0; }
 void wet_canvas_set_left(WetWidget *child, int x) { if (child) child->slot.canvas_left = x; }
 void wet_canvas_set_top (WetWidget *child, int y) { if (child) child->slot.canvas_top  = y; }
+
+/* An explicit designer size.  Without this the canvas sizes a control from its
+ * own measured content, which is right for flowing layouts and wrong for a form
+ * designer that places a button at exactly 100x28. */
+void wet_canvas_set_size(WetWidget *child, int w, int h) {
+    if (!child) return;
+    child->slot.size_set = true;
+    child->slot.size_w = w;
+    child->slot.size_h = h;
+}
 
 int  wet_grid_col(const WetWidget *child) { return child ? child->slot.grid_col : 0; }
 int  wet_grid_row(const WetWidget *child) { return child ? child->slot.grid_row : 0; }

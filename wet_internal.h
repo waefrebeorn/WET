@@ -99,6 +99,10 @@ typedef struct {
 } WetGridPanel;
 
 typedef struct {
+    /* A designer sets an explicit size; the canvas then honours it instead of
+     * the control's measured desired size. */
+    bool      size_set;
+    int       size_w, size_h;
     WetDock   dock;
     int       canvas_left, canvas_top;
     int       grid_col, grid_row;

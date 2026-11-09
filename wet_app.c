@@ -86,6 +86,11 @@ WetWidget *wet_app_find(const WetApp *app, const char *id) {
     return wet_app_lookup((WetApp *)app, id);
 }
 
+int  wet_app_width(const WetApp *app) { return app ? app->width : 0; }
+int  wet_app_height(const WetApp *app) { return app ? app->height : 0; }
+
+WetWidget *wet_app_root_get(const WetApp *app) { return app ? app->root : NULL; }
+
 void *wet_app_lua(WetApp *app) { return app ? app->L : NULL; }
 
 /* The last error the applet reported.  A .wet handler that raises, or a

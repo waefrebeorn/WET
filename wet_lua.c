@@ -255,6 +255,15 @@ static WetWidget *build_widget(WetLuaCtx *ctx, wb_lv_table *t, const char **err)
         }
     }
 
+    /* An explicit designer size (a form designer places a button at exactly
+     * 100x28).  The canvas honours it over the control's measured size. */
+    {
+        wb_lv_value wv = wb_lv_table_get(L, t, k(L, "w"));
+        wb_lv_value hv = wb_lv_table_get(L, t, k(L, "h"));
+        if (wv.t == WB_LV_INT && hv.t == WB_LV_INT)
+            wet_canvas_set_size(w, (int)wv.as.i, (int)hv.as.i);
+    }
+
     /* Event handlers. */
     for (int ev = 1; ev < WET_EVENT_COUNT; ev++) {
         const char *base = kind_name((WetEventKind)ev);

@@ -118,6 +118,11 @@ void      wet_app_set_origin(WetApp *app, int x, int y);
 void      wet_app_root(WetApp *app, WetWidget *w);
 
 WetWidget *wet_app_find(const WetApp *app, const char *id);
+int  wet_app_width(const WetApp *app);
+int  wet_app_height(const WetApp *app);
+
+/* The applet's root widget, or NULL.  A designer needs it to enumerate. */
+WetWidget *wet_app_root_get(const WetApp *app);
 void      *wet_app_data(WetApp *app);
 
 /* Report and read the applet's last error.  A raising script handler or a
@@ -187,6 +192,7 @@ void        wet_textbox_set_text(WetWidget *w, const char *text);
 bool        wet_textbox_password(const WetWidget *w);
 void        wet_textbox_set_password(WetWidget *w, bool on);
 
+const char *wet_checkbox_text(const WetWidget *w);
 bool        wet_checkbox_checked(const WetWidget *w);
 void        wet_checkbox_set_checked(WetWidget *w, bool on);
 
@@ -207,6 +213,8 @@ int         wet_slider_minimum(const WetWidget *w);
 int         wet_slider_maximum(const WetWidget *w);
 void        wet_slider_set_minimum(WetWidget *w, int v);
 void        wet_slider_set_maximum(WetWidget *w, int v);
+
+const char *wet_groupbox_text(const WetWidget *w);
 
 int         wet_image_width (const WetWidget *w);
 int         wet_image_height(const WetWidget *w);
@@ -236,6 +244,8 @@ int  wet_canvas_left(const WetWidget *child);
 int  wet_canvas_top (const WetWidget *child);
 void wet_canvas_set_left(WetWidget *child, int x);
 void wet_canvas_set_top (WetWidget *child, int y);
+/* An explicit size on a canvas child; overrides its measured desired size. */
+void wet_canvas_set_size(WetWidget *child, int w, int h);
 
 /* Grid: row/column, 0-based. */
 int  wet_grid_col(const WetWidget *child);
