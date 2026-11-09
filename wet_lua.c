@@ -204,9 +204,10 @@ static WetWidget *build_widget(WetLuaCtx *ctx, wb_lv_table *t, const char **err)
      *
      *   wet.stack { children = { wet.label{...}, wet.label{...} } }
      *
-     * Numeric keys work too (wet.stack { wet.label{...}, ... }) but only when
-     * no property precedes them -- see the Wua table-literal bug noted in
-     * wet_lua.h.  Both are accepted; `children` wins if both are present. */
+     * Numeric keys work too (wet.stack { wet.label{...}, ... }).  Wua fixed
+     * the table-constructor bug that used to drop the array part when a keyed
+     * field came first, so both forms are now reliable; `children` still wins
+     * when both are present. */
     bool have_children = false;
     wb_lv_value cv = wb_lv_table_get(L, t, k(L, "children"));
     if (cv.t == WB_LV_TABLE) {
