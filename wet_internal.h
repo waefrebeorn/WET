@@ -230,6 +230,7 @@ struct WetApp {
     WetWidget  *root;
     WetWidget  *focus;
     int         width, height;
+    int         origin_x, origin_y;   /* where applet (0,0) lands on screen */
     WetRender  *render;
     void       *userdata;
 

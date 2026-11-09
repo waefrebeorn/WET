@@ -111,6 +111,10 @@ void      wet_app_render(WetApp *app);
 
 /* Resize every time the window does; re-runs the layout pass. */
 void      wet_app_resize(WetApp *app, int width, int height);
+
+/* Where applet (0,0) lands on screen.  A windowed applet sets this to its
+ * content rect; a fullscreen applet leaves it at (0,0). */
+void      wet_app_set_origin(WetApp *app, int x, int y);
 void      wet_app_root(WetApp *app, WetWidget *w);
 
 WetWidget *wet_app_find(const WetApp *app, const char *id);

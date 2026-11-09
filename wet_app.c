@@ -59,10 +59,20 @@ void wet_app_layout(WetApp *app) {
     WetSize avail = { app->width, app->height };
     wet_widget_measure(app->root, avail);
     WetSize want = app->root->desired;
-    WetRect r = (WetRect){ 0, 0,
+    WetRect r = (WetRect){ app->origin_x, app->origin_y,
                            want.w < app->width  ? app->width  : want.w,
                            want.h < app->height ? app->height : want.h };
     wet_widget_arrange(app->root, r);
+}
+
+/* Position the applet's (0,0) on screen.  A windowed applet calls this with
+ * its content rect before rendering, so the same tree draws fullscreen or in
+ * a panel without knowing which it is. */
+void wet_app_set_origin(WetApp *app, int x, int y) {
+    if (!app) return;
+    app->origin_x = x;
+    app->origin_y = y;
+    wet_app_layout(app);
 }
 
 void wet_app_render(WetApp *app) {
