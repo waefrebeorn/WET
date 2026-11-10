@@ -130,6 +130,11 @@ void      *wet_app_data(WetApp *app);
 const char *wet_app_error(WetApp *app, const char *msg);
 const char *wet_app_last_error(const WetApp *app);
 
+/* The active theme's name ("light", "win98", ...), or "custom" for a
+ * hand-built theme.  Public because a host that styles itself needs to know
+ * what is active -- wet.theme(name) only reports the name it just set. */
+const char *wet_theme_name(void);
+
 /* -------------------------------------------------------------- widgets */
 
 /* These are the types a .wet script can name.  Every one is a class name

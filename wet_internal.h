@@ -203,7 +203,8 @@ int                wet_theme_count(void);
 const WetTheme    *wet_theme_at(int i);
 const char        *wet_theme_name_at(int i);
 const WetTheme    *wet_theme_by_name(const char *name);
-const char        *wet_theme_name(void);
+/* wet_theme_name() is declared in wet.h -- it is public, so a host can read
+ * what is active without reaching into this header. */
 
 /* --------------------------------------------------------------- render */
 
