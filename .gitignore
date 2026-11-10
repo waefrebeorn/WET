@@ -1,0 +1,6 @@
+# Build products.  A binary in the tree dirties `git status` on every rebuild
+# and a `git add -A` would commit stale executables over the source.
+/build/
+*.o
+*.d
+*.gch
