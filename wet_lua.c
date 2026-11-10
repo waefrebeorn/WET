@@ -291,6 +291,19 @@ static WetWidget *build_widget(WetLuaCtx *ctx, wb_lv_table *t, const char **err)
 
 /* -------------------------------------------------- dynamic construction */
 /*
+ * Store a message in a Lua global.
+ *
+ * wb_lv_table_set keeps the string POINTER, not the bytes, so handing it a
+ * stack buffer would leave __wet_err pointing at a dead frame -- the reader
+ * would see an empty or corrupt message.  Intern first: an interned string is
+ * owned by the arena and stays valid for the life of the state.
+ */
+static void set_err_global(wb_lv *L, const char *msg) {
+    size_t n = msg ? strlen(msg) : 0;
+    wb_lv_set_global(L, "__wet_err", wb_lv_str(wb_lv_intern(L, msg ? msg : "", n)));
+}
+
+/*
  * A designer must be able to instantiate a control at runtime, not only from a
  * table literal.  wet.create(class, id) makes one and returns its proxy; it is
  * unattached until wet.attach(parent, child) or wet.add(parent, child).
@@ -317,7 +330,7 @@ static wb_lv_value wet_create_fn(wb_lv *L, wb_lv_value *args, int n, void *ud) {
     if (!cid) {
         char buf[160];
         snprintf(buf, sizeof buf, "wet.create: unknown class '%s'", cls ? cls : "?");
-        wb_lv_set_global(L, "__wet_err", wb_lv_str(buf));
+        set_err_global(L, buf);
         return wb_lv_nil();
     }
     WetWidget *w = wet_widget_new(ctx->app, cid, id);
@@ -581,6 +594,42 @@ static wb_lv_value wet_messagebox_fn(wb_lv *L, wb_lv_value *args, int n, void *u
     return wb_lv_nil();
 }
 
+/* --------------------------------------------------------------- theming */
+
+/* wet.theme("win98") -- switch the palette a control paints with.  Returns the
+ * name now active, or false (with __wet_err) for an unknown name. */
+static wb_lv_value wet_theme_fn(wb_lv *L, wb_lv_value *args, int n, void *ud) {
+    (void)ud;
+    if (n < 1) {
+        wb_lv_set_global(L, "__wet_err", wb_lv_str("wet.theme needs a name"));
+        return wb_lv_bool(0);
+    }
+    const char *name = wb_lv_tostring(args[0]);
+    const WetTheme *t = wet_theme_by_name(name);
+    if (!t) {
+        char buf[160];
+        snprintf(buf, sizeof buf, "wet.theme: unknown theme '%s'",
+                 name ? name : "");
+        set_err_global(L, buf);
+        return wb_lv_bool(0);
+    }
+    wet_theme_set(t);
+    return wb_lv_str(t->name);
+}
+
+/* wet.themes() -- the picker table, so a script can offer the names. */
+static wb_lv_value wet_themes_fn(wb_lv *L, wb_lv_value *args, int n, void *ud) {
+    (void)args; (void)n; (void)ud;
+    wb_lv_table *t = wb_lv_table_new(L, wet_theme_count(), 0);
+    for (int i = 0; i < wet_theme_count(); i++) {
+        const char *nm = wet_theme_name_at(i);
+        wb_lv_table_set(L, t, wb_lv_integer((int64_t)(i + 1)),
+                        wb_lv_str(nm ? nm : ""));
+    }
+    wb_lv_value v; v.t = WB_LV_TABLE; v.as.tab = t;
+    return v;
+}
+
 /* --------------------------------------------------------------- register */
 
 void wet_lua_register(WetLua *wl) {
@@ -623,6 +672,8 @@ void wet_lua_register(WetLua *wl) {
     WET_FN("applet",     wet_applet_fn, ctx);
     WET_FN("find",       wet_find_fn,   ctx);
     WET_FN("messagebox", wet_messagebox_fn, ctx);
+    WET_FN("theme",      wet_theme_fn,      ctx);
+    WET_FN("themes",     wet_themes_fn,     ctx);
 #undef WET_KEY
 #undef WET_FN
 
@@ -634,6 +685,8 @@ void wet_lua_register(WetLua *wl) {
     wb_lv_register_global(L, "applet",     wet_applet_fn, ctx);
     wb_lv_register_global(L, "find",       wet_find_fn,   ctx);
     wb_lv_register_global(L, "messagebox", wet_messagebox_fn, ctx);
+    wb_lv_register_global(L, "theme",      wet_theme_fn,      ctx);
+    wb_lv_register_global(L, "themes",     wet_themes_fn,     ctx);
     for (int i = 0; ctors[i]; i++)
         wb_lv_register_global(L, ctors[i], wet_ctor, (void *)ctors[i]);
 }

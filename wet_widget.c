@@ -12,6 +12,7 @@
 /* ---------------------------------------------------------------- theme */
 
 const WetTheme wet_theme_default = {
+    .name          = "light",
     .window        = WET_RGB(0xF0, 0xF0, 0xF0),
     .surface       = WET_RGB(0xFF, 0xFF, 0xFF),
     .sunken        = WET_RGB(0xFF, 0xFF, 0xFF),
@@ -27,10 +28,111 @@ const WetTheme wet_theme_default = {
     .font_scale    = 1,
 };
 
+/* The 1998 shell: a teal desktop, silver chrome, navy accents. */
+const WetTheme wet_theme_win98 = {
+    .name          = "win98",
+    .window        = WET_RGB(0x00, 0x80, 0x80),
+    .surface       = WET_RGB(0xC0, 0xC0, 0xC0),
+    .sunken        = WET_RGB(0xFF, 0xFF, 0xFF),
+    .border        = WET_RGB(0x80, 0x80, 0x80),
+    .border_lit    = WET_RGB(0xDF, 0xDF, 0xDF),
+    .border_shade  = WET_RGB(0x40, 0x40, 0x40),
+    .text          = WET_RGB(0x00, 0x00, 0x00),
+    .text_dim      = WET_RGB(0x40, 0x40, 0x40),
+    .accent        = WET_RGB(0x00, 0x00, 0x80),
+    .accent_text   = WET_RGB(0xFF, 0xFF, 0xFF),
+    .selection     = WET_RGB(0x00, 0x00, 0x80),
+    .selection_text= WET_RGB(0xFF, 0xFF, 0xFF),
+    .font_scale    = 1,
+};
+
+/* Luna: the XP blue over a warm stone surface. */
+const WetTheme wet_theme_xp = {
+    .name          = "xp",
+    .window        = WET_RGB(0xEC, 0xE9, 0xD8),
+    .surface       = WET_RGB(0xF1, 0xEF, 0xE2),
+    .sunken        = WET_RGB(0xFF, 0xFF, 0xFF),
+    .border        = WET_RGB(0x91, 0x9B, 0x9C),
+    .border_lit    = WET_RGB(0xFF, 0xFF, 0xFF),
+    .border_shade  = WET_RGB(0x71, 0x6F, 0x64),
+    .text          = WET_RGB(0x00, 0x00, 0x00),
+    .text_dim      = WET_RGB(0x6D, 0x6D, 0x6D),
+    .accent        = WET_RGB(0x31, 0x6A, 0xC5),
+    .accent_text   = WET_RGB(0xFF, 0xFF, 0xFF),
+    .selection     = WET_RGB(0x31, 0x6A, 0xC5),
+    .selection_text= WET_RGB(0xFF, 0xFF, 0xFF),
+    .font_scale    = 1,
+};
+
+/* WuBu green on a deep field -- the house theme. */
+const WetTheme wet_theme_wubu = {
+    .name          = "wubu",
+    .window        = WET_RGB(0x0E, 0x2A, 0x1E),
+    .surface       = WET_RGB(0x14, 0x35, 0x2A),
+    .sunken        = WET_RGB(0x0A, 0x1F, 0x16),
+    .border        = WET_RGB(0x2E, 0x6B, 0x52),
+    .border_lit    = WET_RGB(0x3E, 0x8A, 0x68),
+    .border_shade  = WET_RGB(0x06, 0x12, 0x0D),
+    .text          = WET_RGB(0xE8, 0xF5, 0xEE),
+    .text_dim      = WET_RGB(0x8F, 0xB8, 0xA5),
+    .accent        = WET_RGB(0x2F, 0xA3, 0x6B),
+    .accent_text   = WET_RGB(0x04, 0x14, 0x0C),
+    .selection     = WET_RGB(0x2F, 0xA3, 0x6B),
+    .selection_text= WET_RGB(0x04, 0x14, 0x0C),
+    .font_scale    = 1,
+};
+
+/* A neutral dark surface, for low light and for the GPU effect pass to sit on. */
+const WetTheme wet_theme_dark = {
+    .name          = "dark",
+    .window        = WET_RGB(0x1E, 0x1E, 0x1E),
+    .surface       = WET_RGB(0x2A, 0x2A, 0x2A),
+    .sunken        = WET_RGB(0x16, 0x16, 0x16),
+    .border        = WET_RGB(0x4A, 0x4A, 0x4A),
+    .border_lit    = WET_RGB(0x5A, 0x5A, 0x5A),
+    .border_shade  = WET_RGB(0x10, 0x10, 0x10),
+    .text          = WET_RGB(0xE8, 0xE8, 0xE8),
+    .text_dim      = WET_RGB(0x9A, 0x9A, 0x9A),
+    .accent        = WET_RGB(0x4C, 0x8B, 0xF5),
+    .accent_text   = WET_RGB(0xFF, 0xFF, 0xFF),
+    .selection     = WET_RGB(0x4C, 0x8B, 0xF5),
+    .selection_text= WET_RGB(0xFF, 0xFF, 0xFF),
+    .font_scale    = 1,
+};
+
+static const WetTheme *const g_themes[] = {
+    &wet_theme_default, &wet_theme_win98, &wet_theme_xp,
+    &wet_theme_wubu,    &wet_theme_dark,
+};
+
 static const WetTheme *g_theme = &wet_theme_default;
 
 const WetTheme *wet_theme_get(void) { return g_theme; }
 void wet_theme_set(const WetTheme *t) { g_theme = t ? t : &wet_theme_default; }
+
+int                wet_theme_count(void) { return (int)(sizeof g_themes / sizeof g_themes[0]); }
+
+const WetTheme    *wet_theme_at(int i) {
+    if (i < 0 || i >= wet_theme_count()) return NULL;
+    return g_themes[i];
+}
+
+const char        *wet_theme_name_at(int i) {
+    const WetTheme *t = wet_theme_at(i);
+    return t ? t->name : NULL;
+}
+
+const WetTheme    *wet_theme_by_name(const char *name) {
+    if (!name) return NULL;
+    for (int i = 0; i < wet_theme_count(); i++)
+        if (g_themes[i]->name && strcmp(g_themes[i]->name, name) == 0)
+            return g_themes[i];
+    return NULL;
+}
+
+const char *wet_theme_name(void) {
+    return (g_theme && g_theme->name) ? g_theme->name : "custom";
+}
 
 /* ------------------------------------------------------------ text metrics
  * The VBE font is a fixed 8x8 cell; GLYPH_ADVANCE is the advance width.  A

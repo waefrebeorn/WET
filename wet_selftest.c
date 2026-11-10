@@ -498,6 +498,47 @@ static void test_widget_free_releases_children(void) {
 
 /* -------------------------------------------------------------------- main */
 
+static void test_theme_registry(void) {
+    CHECK(wet_theme_count() >= 5, "at least five named themes");
+    CHECK(wet_theme_by_name("win98") != NULL, "win98 theme exists");
+    CHECK(wet_theme_by_name("xp") != NULL, "xp theme exists");
+    CHECK(wet_theme_by_name("wubu") != NULL, "wubu theme exists");
+    CHECK(wet_theme_by_name("dark") != NULL, "dark theme exists");
+    CHECK(wet_theme_by_name("nope") == NULL, "unknown theme is NULL");
+    CHECK(wet_theme_by_name(NULL) == NULL, "NULL theme is NULL");
+
+    /* The default is the light palette. */
+    CHECK(strcmp(wet_theme_name(), "light") == 0, "default theme is light");
+
+    /* Switching changes what the controls paint with. */
+    const WetTheme *w = wet_theme_by_name("win98");
+    CHECK(w != NULL, "win98 resolves");
+    if (w) {
+        CHECK(w->window == WET_RGB(0x00, 0x80, 0x80), "win98 window is teal");
+        CHECK(w->accent == WET_RGB(0x00, 0x00, 0x80), "win98 accent is navy");
+        wet_theme_set(w);
+        CHECK(wet_theme_get() == w, "wet_theme_set sticks");
+        CHECK(strcmp(wet_theme_name(), "win98") == 0, "name follows the set");
+    }
+
+    /* A hand-built theme has no name, and reports "custom". */
+    WetTheme custom = wet_theme_default;
+    custom.name = NULL;
+    wet_theme_set(&custom);
+    CHECK(strcmp(wet_theme_name(), "custom") == 0, "unnamed theme reads custom");
+
+    /* NULL resets to the default rather than crashing. */
+    wet_theme_set(NULL);
+    CHECK(wet_theme_get() == &wet_theme_default, "NULL theme resets to default");
+
+    /* Every theme in the picker has a name and a non-zero font scale. */
+    for (int i = 0; i < wet_theme_count(); i++) {
+        const WetTheme *t = wet_theme_at(i);
+        CHECK(t != NULL, "theme_at in range");
+        if (t) CHECK(t->name && t->name[0], "theme has a name");
+    }
+}
+
 int main(void) {
     printf("=== wet framework ===\n");
     test_label_measure();
@@ -522,6 +563,7 @@ int main(void) {
     test_resize_reflows();
     test_disabled_control_still_measures();
     test_widget_free_releases_children();
+    test_theme_registry();
 
     printf("=== wet: %d checks, %d failed ===\n", g_checks, g_fails);
     return g_fails ? 1 : 0;

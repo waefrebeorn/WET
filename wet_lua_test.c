@@ -315,6 +315,38 @@ static void test_find_returns_live_widget(void) {
     wet_app_free(app);
 }
 
+static void test_theme_from_script(void) {
+    WetApp *app; WetLua *wl = new_app(&app, 320, 200);
+    CHECK(wl != NULL, "lua state created");
+    if (!wl) return;
+
+    const char *err = wet_lua_run(wl,
+        "local names = wet.themes()\n"
+        "wet.picked = names[1]\n"
+        "wet.active = wet.theme('win98')\n"
+        "wet.bad = wet.theme('nope')\n"
+        "wet.err = __wet_err\n", "theme.wet");
+    /* The bad call is reported twice by design: the script can read __wet_err
+     * itself, and wet_lua_run consumes it and returns it as the run error. */
+    CHECK(err != NULL && strstr(err, "unknown theme") != NULL,
+          "the bad theme is the run error");
+    const char *picked = lua_str(wl, "wet", "picked");
+    const char *active = lua_str(wl, "wet", "active");
+    const char *e = lua_str(wl, "wet", "err");
+    CHECK(picked && strcmp(picked, "light") == 0,
+          "wet.themes lists the default first");
+    CHECK(active && strcmp(active, "win98") == 0,
+          "wet.theme returns the name now active");
+    CHECK(e && strstr(e, "unknown theme") != NULL,
+          "an unknown theme sets __wet_err");
+    CHECK(strcmp(wet_theme_name(), "win98") == 0,
+          "a rejected theme does not switch the palette");
+
+    wet_lua_free(wl);
+    wet_app_free(app);
+    wet_theme_set(NULL);   /* the theme is global; leave it as we found it */
+}
+
 int main(void) {
     printf("=== wet lua binding ===\n");
     test_build_from_script();
@@ -327,6 +359,7 @@ int main(void) {
     test_nested_panels();
     test_handler_error_is_isolated();
     test_find_returns_live_widget();
+    test_theme_from_script();
     printf("=== wet_lua: %d checks, %d failed ===\n", g_checks, g_fails);
     return g_fails ? 1 : 0;
 }

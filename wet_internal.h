@@ -168,8 +168,11 @@ int  wet_text_width (const char *s);
 int  wet_text_height(void);
 void wet_text_draw  (WetRender *r, int x, int y, const char *s, WetColor c);
 
-/* Theme: the palette a control paints with. */
+/* Theme: the palette a control paints with.  `name` is set by the registry so
+ * wet_theme_name() can report what is active; a theme built by hand leaves it
+ * NULL. */
 typedef struct {
+    const char *name;
     WetColor window;      /* applet background          */
     WetColor surface;     /* panel / control face       */
     WetColor sunken;      /* text box interior          */
@@ -186,8 +189,21 @@ typedef struct {
 } WetTheme;
 
 extern const WetTheme wet_theme_default;
+extern const WetTheme wet_theme_win98;
+extern const WetTheme wet_theme_xp;
+extern const WetTheme wet_theme_wubu;
+extern const WetTheme wet_theme_dark;
+
 const WetTheme *wet_theme_get(void);
 void wet_theme_set(const WetTheme *t);
+
+/* The named themes, in picker order.  wet_theme_by_name returns NULL for an
+ * unknown name.  wet_theme_name returns the active theme's name, or "custom". */
+int                wet_theme_count(void);
+const WetTheme    *wet_theme_at(int i);
+const char        *wet_theme_name_at(int i);
+const WetTheme    *wet_theme_by_name(const char *name);
+const char        *wet_theme_name(void);
 
 /* --------------------------------------------------------------- render */
 
