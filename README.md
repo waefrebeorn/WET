@@ -13,6 +13,11 @@ fast-moving in Lua.
 
 ---
 
+
+> **~WuBu~ AGI** — one system, many repositories. This is the **applet framework**. The Body is [WuBuOS](https://github.com/waefrebeorn/WuBuOS), the Brain wubuwizard, the Compiler WuBuNOS.
+
+
+> **~WuBu~ AGI** — one system, many repositories. This is the **applet framework**. The Body is [WuBuOS](https://github.com/waefrebeorn/WuBuOS), the Brain wubuwizard, the Compiler WuBuNOS.
 ## The model
 
 | .WET | .NET |
