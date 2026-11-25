@@ -4,3 +4,6 @@
 *.o
 *.d
 *.gch
+*.a
+build/
+*.bin

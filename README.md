@@ -136,3 +136,15 @@ reference plus the body under a local `.weak.<name>.` symbol — so the link
 still fails.  That is why the old `wubu_lua_compat.c` shim did not work here.
 
 See `WET.md` in the WuBuOS repository for the integration notes.
+
+## Standard
+
+- **Layer:** WET applet runtime (shell surfaces as data)
+- **Build:** `make`
+- **Verify:** `NO test target yet -- a real one needs a headless applet host that renders a fixture and asserts pixel output`
+- **Docs:** no `docs/` yet -- the parent's `docs/compendium/04-roadmap/submodule-standard.md` is the front door
+- **Provenance:** own C11; no vendored third-party source without a note
+
+Part of the ~WuBu~ tree: this repository is held to the same conventions as the
+parent. See the parent's `docs/compendium/04-roadmap/submodule-standard.md` for the
+checklist and why each item exists.
